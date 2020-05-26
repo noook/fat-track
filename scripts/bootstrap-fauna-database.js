@@ -49,7 +49,7 @@ function createFaunaDB(key) {
   });
 
   /* Based on your requirements, change the schema here */
-  return client.query(q.Create(q.Ref("classes"), { name: "weight_record" }))
+  return client.query(q.Create(q.Ref("classes"), { name: "weight_records" }))
     .then(()=>{
       return client.query(
         q.Create(q.Ref("indexes"), {
