@@ -1,6 +1,5 @@
 import { Handler, Context, Callback, APIGatewayEvent } from 'aws-lambda'
-import { query, Client } from 'faunadb';
-
+import { query, Client, values } from 'faunadb';
 
 interface WeightPostBody {
   token: string;
@@ -12,6 +11,20 @@ interface Response {
   body: string;
 }
 
+interface WeightRecord {
+  ts: number;
+  ref: values.Ref;
+  data: {
+    value: number;
+  };
+}
+
+// Get all query
+// const results = await client.query<{ data: WeightRecord[] }>(Map(
+//   Paginate(Documents(Collection('weight_records'))),
+//   Lambda(x => Get(x))
+// ));
+
 const { Create, Ref } = query
 const client = new Client({
   secret: process.env.FAUNADB_SECRET!
@@ -22,9 +35,9 @@ const handler: Handler = (event: APIGatewayEvent, context: Context, callback: Ca
     statusCode: 405,
     body: JSON.stringify({ msg: 'Method not allowed' })
   });
+
   try {
     const payload: WeightPostBody = JSON.parse(event.body || '');
-    console.log(payload);
     const { value } = payload;
 
     return client.query(
