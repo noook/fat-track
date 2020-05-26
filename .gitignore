@@ -1,5 +1,5 @@
 node_modules
-./lambda
+lambda
 # Local Netlify folder
 .netlify
 .env
