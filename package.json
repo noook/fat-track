@@ -21,6 +21,7 @@
   "homepage": "https://github.com/noook/fat-track#readme",
   "dependencies": {
     "@babel/runtime": "^7.9.6",
+    "encoding": "^0.1.12",
     "faunadb": "^2.14.1",
     "netlify-lambda": "^1.6.3"
   },
