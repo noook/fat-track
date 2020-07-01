@@ -1,4 +1,4 @@
-import { Handler, Context, Callback, APIGatewayEvent } from 'aws-lambda'
+import { Handler, Context, Callback, APIGatewayEvent } from 'aws-lambda';
 import { query, Client, values } from 'faunadb';
 
 interface WeightPostBody {
