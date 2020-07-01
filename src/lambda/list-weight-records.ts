@@ -34,6 +34,12 @@ const handler: Handler = (event: APIGatewayEvent, context: Context, callback: Ca
         results: results.data.map(entry => ({
           date: new Date(entry.ts / 1000),
           value: entry.data.value,
+          humanReadableDate: (date => [
+            date.getDate().toString().padStart(2, '0'),
+            (date.getMonth() + 1).toString().padStart(2, '0'),
+            date.getFullYear(),
+          ].join('/'))(new Date(entry.ts / 1000)),
+          unit: 'Kg',
         }))
       }),
     }))
