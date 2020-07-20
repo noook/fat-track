@@ -41,7 +41,7 @@ const handler: Handler = (event: APIGatewayEvent, context: Context, callback: Ca
           ].join('/'))(new Date(entry.ts / 1000)),
           unit: 'Kg',
         }))
-      }, null, !!event.queryStringParameters?.human ? 2 : 0),
+      }, null, event.queryStringParameters?.human !== undefined ? 2 : 0),
     }))
     .catch((error) => callback(error, {
       statusCode: 500,
