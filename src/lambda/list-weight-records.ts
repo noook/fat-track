@@ -30,7 +30,15 @@ const handler: Handler = (event: APIGatewayEvent, context: Context, callback: Ca
     Lambda(x => Get(x))
   )).then((results) => callback(null, {
       statusCode: 200,
-      body: JSON.stringify({
+      body: event.queryStringParameters?.txt !== undefined ? 
+      results.data.map(entry => `${
+        (date => [
+          date.getDate().toString().padStart(2, '0'),
+          (date.getMonth() + 1).toString().padStart(2, '0'),
+          date.getFullYear(),
+        ].join('/'))(new Date(entry.ts / 1000))
+      } ${entry.data.value}Kg`).join('\n')
+      : JSON.stringify({
         results: results.data.map(entry => ({
           date: new Date(entry.ts / 1000),
           value: entry.data.value,
