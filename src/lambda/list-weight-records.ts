@@ -37,7 +37,7 @@ const handler: Handler = (event: APIGatewayEvent, context: Context, callback: Ca
           (date.getMonth() + 1).toString().padStart(2, '0'),
           date.getFullYear(),
         ].join('/'))(new Date(entry.ts / 1000))
-      } ${entry.data.value}Kg`).join('\n')
+      } ${entry.data.value.toFixed(1)}Kg`).join('\n')
       : JSON.stringify({
         results: results.data.map(entry => ({
           date: new Date(entry.ts / 1000),
