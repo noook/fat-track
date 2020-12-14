@@ -9,6 +9,7 @@ interface Response {
 interface WeightRecord {
   ts: number;
   ref: values.Ref;
+  after: any,
   data: {
     value: number;
   };
@@ -19,42 +20,55 @@ const client = new Client({
   secret: process.env.FAUNADB_SECRET!
 })
 
-const handler: Handler = (event: APIGatewayEvent, context: Context, callback: Callback<Response>) => {
-  if (event.httpMethod !== 'GET') return callback(undefined, {
-    statusCode: 405,
-    body: JSON.stringify({ msg: 'Method not allowed' })
-  });
+function getDate(date: Date): string {
+  return [
+    date.getDate().toString().padStart(2, '0'),
+    (date.getMonth() + 1).toString().padStart(2, '0'),
+    date.getFullYear(),
+  ].join('/');
+}
 
-  client.query<{ data: WeightRecord[] }>(Map(
-    Paginate(Documents(Collection('weight_records'))),
+const handler: Handler = async (event: APIGatewayEvent, context: Context, callback: Callback<Response>) => {
+  if (event.httpMethod !== 'GET') {
+    return callback(undefined, {
+      statusCode: 405,
+      body: JSON.stringify({ msg: 'Method not allowed' })
+    });
+  }
+
+  const query = client.query<{ data: WeightRecord[] }>(Map(
+    Paginate(Documents(Collection('weight_records')), { size: 500 }),
     Lambda(x => Get(x))
-  )).then((results) => callback(null, {
-      statusCode: 200,
-      body: event.queryStringParameters?.txt !== undefined ? 
-      results.data.map(entry => `${
-        (date => [
-          date.getDate().toString().padStart(2, '0'),
-          (date.getMonth() + 1).toString().padStart(2, '0'),
-          date.getFullYear(),
-        ].join('/'))(new Date(entry.ts / 1000))
-      } ${entry.data.value.toFixed(1)}Kg`).join('\n')
-      : JSON.stringify({
+  ));
+
+
+  return query.then((results) => {
+    let body;
+
+    if (event.queryStringParameters?.txt !== undefined) {
+      body = results.data
+        .map(entry => `${getDate(new Date(entry.ts / 1000))} ${entry.data.value.toFixed(1)}Kg`)
+        .join('\n');
+    } else {
+      body = JSON.stringify({
         results: results.data.map(entry => ({
           date: new Date(entry.ts / 1000),
           value: entry.data.value,
-          humanReadableDate: (date => [
-            date.getDate().toString().padStart(2, '0'),
-            (date.getMonth() + 1).toString().padStart(2, '0'),
-            date.getFullYear(),
-          ].join('/'))(new Date(entry.ts / 1000)),
+          humanReadableDate: getDate(new Date(entry.ts / 1000)),
           unit: 'Kg',
         }))
-      }, null, event.queryStringParameters?.human !== undefined ? 2 : 0),
-    }))
-    .catch((error) => callback(error, {
-      statusCode: 500,
-      body: JSON.stringify(error)
-    }))
+      }, null, event.queryStringParameters?.human !== undefined ? 0 : 2)
+    }
+
+    return callback(undefined, {
+      statusCode: 200,
+      body,
+    });
+  })
+  .catch((error) => callback(error, {
+    statusCode: 500,
+    body: JSON.stringify(error)
+  }))
 }
 
 export { handler }
